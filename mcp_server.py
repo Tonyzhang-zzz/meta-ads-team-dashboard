@@ -60,26 +60,30 @@ def graph_all(path, params, max_rows=1000):
             payload = json.loads(response.read().decode("utf-8"))
 
 
-def action_value(items, names):
+def action_value_preferred(items, names):
+    """Return the first available Meta action metric to avoid duplicate counting."""
     values = {
         item.get("action_type"): float(item.get("value", 0) or 0)
         for item in (items or [])
     }
-    return sum(values.get(name, 0) for name in names)
+    for name in names:
+        if name in values:
+            return values[name]
+    return 0
 
 
 def normalize(row):
     spend = float(row.get("spend", 0) or 0)
     impressions = float(row.get("impressions", 0) or 0)
     clicks = float(row.get("clicks", 0) or 0)
-    installs = action_value(
-        row.get("actions"), ["mobile_app_install", "omni_app_install"]
+    installs = action_value_preferred(
+        row.get("actions"), ["omni_app_install", "mobile_app_install"]
     )
-    purchases = action_value(
+    purchases = action_value_preferred(
         row.get("actions"),
-        ["purchase", "omni_purchase", "app_custom_event.fb_mobile_purchase"],
+        ["omni_purchase", "purchase", "app_custom_event.fb_mobile_purchase"],
     )
-    revenue = action_value(
+    revenue = action_value_preferred(
         row.get("action_values"),
         ["purchase", "omni_purchase", "app_custom_event.fb_mobile_purchase"],
     )
