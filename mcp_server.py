@@ -206,7 +206,7 @@ def list_ad_accounts() -> dict:
     rows = graph_all(
         "me/adaccounts",
         {
-            "fields": "id,name,account_status,currency,timezone_name,business",
+            "fields": "id,name,account_status,currency,timezone_name",
             "limit": 200,
         },
     )
